@@ -56,34 +56,63 @@ require_capability('mod/url:view', $context);
 $arr2 = array();
 echo "<div id='cssmenu'>
 <ul>";
-$cm = $DB->get_record('course_modules',array('id'=>$id),'section');
-//print_object($cm->section);
+$cm = $DB->get_record('course_modules',array('id'=>$id),'section,course');
 //$cs = $DB->get_records('course_sections',array('id'=>$cm->section),'name,sequence,course,section');
-$cs = $DB->get_records('course_format_options',array('sectionid'=>$cm->section,'name'=>'parent'));
+$cs = $DB->get_records('course_format_options',array('courseid'=>$cm->course,'sectionid'=>$cm->section,'name'=>'parent'));
 foreach($cs as $c){
-$sectionhead = $DB->get_record('course_sections',array('section'=>$c->value),'name');
-echo "<li class='active'><a href='#'class='subjectname'><span>".$sectionhead->name."</span></a></li>";
+$sectionhead = $DB->get_record('course_sections',array('course'=>$cm->course,'section'=>$c->value),'name');
+$secsplit = explode('-',$sectionhead->name,2);
+echo "<li class='active'><a href='#'class='subjectname'><span>".$secsplit[1]."</span></a></li>";
 $cs1 = $DB->get_records('course_format_options',array('name'=>'parent','value'=>$c->value));
 $arr2 = $cs1;
 }
+//print_object($arr2);
 foreach($arr2 as $arr22){
 $csections []= $DB->get_record('course_sections',array('id'=>$arr22->sectionid),'name,sequence');
 }
+$labarray =array();
+$a33 = array();
+$sec222 = array();
 $count = count($csections);
-if($csections[0]->sequence == ''){
+//print_object($csections);
+foreach($csections as $csec1){
+	if(stripos($csec1->name,'Course')!==false){
+		$csections1[] = $csec1; 
+	}
+}
+$i = 1;
+$flag = 0;
+foreach($csections as $csec1){
+	if(stripos($csec1->name,'Unit')!==false){
+		$flag++;
+		$unit = explode('Unit',$csec1->name);
+		//print_object($unit[1]);
+		$sec222[$unit[1]] = $csec1;
+	}
+	sort($sec222);
+}
+$a33 = array_merge($csections1,$sec222);
+foreach($csections as $csec1){
+        if(stripos($csec1->name,'Labs')!==false){
+                $labarray[] = $csec1;
+        }
+}
+$finalsection = array_merge($a33,$labarray);
+//print_object($finalsection);
+if($finalsection[0]->sequence == ''){
 }else{
-	if($id == $csections[0]->sequence){
+	if($id == $finalsection[0]->sequence){
 	echo "<li class='exp'>";
 	}else{
 	echo "<li>";
 	}
 ?>
-<a onclick="top.window.location='/lms3/mod/url/view.php?id=<?php echo $csections[0]->sequence;?>'">
-<span> &#x1F3E0; <?php echo $csections[0]->name;?></span>
+<a onclick="top.window.location='/lms3/mod/url/view.php?id=<?php echo $finalsection[0]->sequence;?>'">
+<span> &#x1F3E0; <?php echo $finalsection[0]->name;?></span>
 </a>
 <?php echo "</li>";
 }
-foreach($csections as $secs){
+foreach($finalsection as $secs){
 	$seqnum = explode(',',$secs->sequence);
 				/*echo "<li>";
                                 ?>
@@ -131,16 +160,16 @@ foreach($csections as $secs){
                                 <?php echo "</li>";*/
 
 }
-				if($csections[$count-1]->sequence == ''){
+				if($finalsection[$count-1]->sequence == ''){
 				}else{
-					if($id == $csections[$count-1]->sequence){
+					if($id == $finalsection[$count-1]->sequence){
 					        echo "<li class='exp'>";
        					}else{
         					echo "<li>";
         				}
                                 	?>
-                                	<a onclick="top.window.location='/lms3/mod/url/view.php?id=<?php echo $csections[$count-1]->sequence;?>'">
-                                        	<span> &#x26AA; <?php echo $csections[$count-1]->name;?></span>
+                                	<a onclick="top.window.location='/lms3/mod/url/view.php?id=<?php echo $finalsection[$count-1]->sequence;?>'">
+                                        	<span> &#x26AA; <?php echo $finalsection[$count-1]->name;?></span>
                                 	</a>
                                 	<?php echo "</li>";
 				}
@@ -153,7 +182,7 @@ font-weight: bolder;
 border-left: 2px solid red!important;	
 }
 a.subjectname {
-    text-align: justify;
+    text-align: left;
     color: #454e53!important;
     text-transform: uppercase;
 }

@@ -134,12 +134,13 @@ foreach($subseccc as $sid => $sval){
 $content .='<div class="sublinks">';
 $section = $DB->get_record('course_modules',array('id'=>$modobj->id),'section');
 $format = $DB->get_record('course_format_options',array('sectionid'=>$section->section,'name'=>'parent'),'value');
-$sectionaneme = $DB->get_record('course_sections',array('section'=>$format->value),'name'); 
+$sectionaneme = $DB->get_record('course_sections',array('section'=>$format->value,'course'=>$sval->courseid),'name'); 
 if(!$modobj){
 	$flag = 1;	
 }else{
+$secsplit = explode('-',$sectionaneme->name,2);
  $content.= html_writer::link(new moodle_url('/mod/url/view.php', array('id' => $modobj->id)),
-     $sectionaneme->name, array('class' => 'btn btn-default','style'=>'width:100%;margin:5px'));
+     $secsplit[1], array('class' => 'btn btn-default','style'=>'width:100%;margin:5px'));
 }
 $content .= '</div>';
 }
