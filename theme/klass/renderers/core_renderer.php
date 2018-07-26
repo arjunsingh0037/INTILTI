@@ -94,8 +94,9 @@ foreach($arr2 as $secid=>$sectionname){
 	$secname = explode('-',$sectionname);
 	$secname1 = $secname[0];
 	foreach($allusers as $users){
-		if($DB->record_exists('lti_enrol',array('email'=>$users->email))){
-			$user_lti_enrol = $DB->get_records('lti_enrol',array('email'=>$users->email),'userid,email,semester,subject');
+		$umail = ltrim($users->email);
+		if($DB->record_exists('lti_enrol',array('email'=>$umail))){
+			$user_lti_enrol = $DB->get_records('lti_enrol',array('email'=>$umail),'userid,email,semester,subject');
 foreach($user_lti_enrol as $ltiusers){
 			   if($USER->id == $ltiusers->userid){
 				if($secname1 == $ltiusers->subject){	
@@ -112,12 +113,9 @@ foreach($user_lti_enrol as $ltiusers){
 						if($secname->name == 'Course Objectives'){
 							$subseccc[$subbb->sectionid] = $subbb;
 						}
-						if($secname->name == 'Unit 1'){
-							$subsecunit[$subbb->sectionid] = $subbb; 
-						}
 					}
-		}
-		}
+					}
+					}
 					/*foreach($subseccc as $sid => $sval){
 					 $modobj = $DB->get_record('course_modules',array('section'=>$sid),'id,module,instance');
 					}*/
@@ -128,35 +126,63 @@ foreach($user_lti_enrol as $ltiusers){
 	}
 }
 $flag = 0;
+$noobj =array();
 if($subseccc != null){
-foreach($subseccc as $sid => $sval){
- $modobj = $DB->get_record('course_modules',array('section'=>$sid),'id,module,instance');
-$content .='<div class="sublinks">';
-$section = $DB->get_record('course_modules',array('id'=>$modobj->id),'section');
-$format = $DB->get_record('course_format_options',array('sectionid'=>$section->section,'name'=>'parent'),'value');
-$sectionaneme = $DB->get_record('course_sections',array('section'=>$format->value,'course'=>$sval->courseid),'name'); 
-if(!$modobj){
-	$flag = 1;	
-}else{
-$secsplit = explode('-',$sectionaneme->name,2);
- $content.= html_writer::link(new moodle_url('/mod/url/view.php', array('id' => $modobj->id)),
-     $secsplit[1], array('class' => 'btn btn-default','style'=>'width:100%;margin:5px'));
+	foreach($subseccc as $sid => $sval){
+ 		$modobj = $DB->get_record('course_modules',array('section'=>$sid),'id,module,instance');
+		$content .='<div class="sublinks">';
+		$section = $DB->get_record('course_modules',array('id'=>$modobj->id),'section');
+		$format = $DB->get_record('course_format_options',array('sectionid'=>$section->section,'name'=>'parent'),'value');
+		$sectionaneme = $DB->get_record('course_sections',array('section'=>$format->value,'course'=>$sval->courseid),'name,sequence'); 
+		
+		$secsplit = explode('-',$sectionaneme->name,2);
+		if($modobj){
+ 			$content.= html_writer::link(new moodle_url('/mod/url/view.php', array('id' => $modobj->id)),
+     			$secsplit[1], array('class' => 'btn btn-default','style'=>'width:100%;margin:5px'));
+		}else{
+			$noobj[] = array('sectionid'=>$sid,'value'=>$sval->value);
+		}
+		$content .= '</div>';
+	}
+$flag = 1;
 }
-$content .= '</div>';
+$cnt = 0;
+$c1 = 0;
+$arr5 = $arr6 = $arr7 = array();
+if($noobj != null){
+
+	foreach($noobj as $nobj){
+		$format = $DB->get_records('course_format_options',array('value'=>$nobj['value'],'courseid'=>3));
+		foreach($format as $key=>$fo){
+			$arr5 []=$fo; 
+		}
+	}
+	//print_object($arr5);
+	foreach($arr5 as $k3=>$a5){
+		foreach($noobj as $k2=>$no2){
+			if(($no2['sectionid'] == $a5->sectionid) && ($no2['value'] == $a5->value)){
+				$arr6[] = $k3+1;
+			}
+		}
+	}
+	foreach($arr6 as $a6){
+		$arr7[] = $arr5[$a6];
+		$format_id = $DB->get_record('course_sections',array('id'=>$arr5[$a6]->sectionid,'course'=>3),'sequence');
+		$secs = explode(",",$format_id->sequence);
+		$secids []=$secs[0]; 
+	}
+	foreach($secids as $mod){
+		$section2 = $DB->get_record('course_modules',array('id'=>$mod),'section');
+                $format2 = $DB->get_record('course_format_options',array('sectionid'=>$section2->section),'value');
+                $sectionaneme2 = $DB->get_record('course_sections',array('section'=>$format2->value,'course'=>3),'name,sequence');
+		$secsplit2 = explode('-',$sectionaneme2->name,2);	
+		$content.= html_writer::link(new moodle_url('/mod/url/view.php', array('id' => $mod)),
+                $secsplit2[1], array('class' => 'btn btn-default','style'=>'width:100%;margin:5px'));
+
+	}
+	$flag = 1;
 }
-if($flag == 1){
-foreach($subsecunit as $suid => $suval){
-$modobj1 = $DB->get_record('course_modules',array('section'=>$suid),'id,module,instance');
-$content1 .='<div class="sublinks">';
-$section1 = $DB->get_record('course_modules',array('id'=>$modobj1->id),'section');
-$format1 = $DB->get_record('course_format_options',array('sectionid'=>$section1->section,'name'=>'parent'),'value');
-$sectionaneme1 = $DB->get_record('course_sections',array('section'=>$format1->value),'name'); 
-$content.= html_writer::link(new moodle_url('/mod/url/view.php', array('id' => $modobj1->id)),
-     $sectionaneme1->name, array('class' => 'btn btn-default','style'=>'width:100%;margin:5px'));
-$content .= '</div>';
-}
-}
-}else{
+if($flag==0){
  $content .= '<div class="alert alert-danger">
     <strong>Access Denied!</strong> You have not registered to this IBM module.
   </div>';
