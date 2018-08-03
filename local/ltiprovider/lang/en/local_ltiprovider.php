@@ -121,3 +121,4 @@ $string['enrollearn'] = 'Automatically enrol Learners';
 $string['enrollearn_help'] = 'Uncheck this box to redirect learners to the course page so they can select a self-enrolment option';
 $string['userreport'] = 'Consumers Report';
 $string['consumer'] = 'LTI Consumers';
+$string['upload_users'] = 'Upload LTI Users';

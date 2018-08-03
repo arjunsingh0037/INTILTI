@@ -23,7 +23,8 @@ if (!has_capability('local/ltiprovider:manage',$context,$USER->id)) {
 }
 
 $title = 'LTI user upload';
-$PAGE->set_url('/local/ltiprovider/upload_users.php');
+$url = $CFG->wwwroot.'/local/ltiprovider/upload_users.php';
+$PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
@@ -98,6 +99,7 @@ if($flag == 1){
     echo '<div class="alert alert-success">
     <strong>'.$count.'</strong> Users data successfully uploaded.
   </div>';
+  $mform->reset();
 }
 if($existing_userdata){
     $existing_no = count($existing_userdata);
@@ -112,7 +114,7 @@ if($existing_userdata){
 }
 if($flag == '-1'){
    echo '<div class="alert alert-danger">
-    <strong>Error uploadind data for some users.</strong>
+    <strong>Error uploading data for some users.</strong>
     </div>'; 
 }
 echo $OUTPUT->box_end();

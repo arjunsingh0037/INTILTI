@@ -109,6 +109,9 @@ function local_ltiprovider_extend_navigation ($nav) {
         $nav->add_node($flat);
         $abc = $nav->add(get_string('consumer','local_ltiprovider'),$CFG->wwwroot.'/local/ltiprovider/consumers_report.php');
         $abc->showinflatnavigation = true; 
+
+        $xyz = $nav->add(get_string('upload_users','local_ltiprovider'),$CFG->wwwroot.'/local/ltiprovider/upload_users.php');
+        $xyz->showinflatnavigation = true;
     }
 }
 
